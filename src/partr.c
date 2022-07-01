@@ -38,7 +38,12 @@ static const int16_t sleeping = 1;
 // * Enqueuer:
 //   * 2: `jl_atomic_load_relaxed(&ptls->sleep_check_state)` in `jl_wakeup_thread` returns `not_sleeping`
 // i.e., the dequeuer misses the enqueue and enqueuer misses the sleep state transition.
-
+// and
+// * Enqueuer:
+//   * 1: `jl_atomic_store_relaxed(jl_uv_n_waiters, 1)` in `JL_UV_LOCK`
+// * Dequeuer:
+//   * 2: `jl_atomic_load_relaxed(jl_uv_n_waiters)` in `jl_task_get_next` returns `0`
+// i.e., the dequeuer misses the `n_waiters` is set and enqueuer misses the uv_stop flag (in signal_async) transition to cleared
 
 JULIA_DEBUG_SLEEPWAKE(
 uint64_t wakeup_enter;
